@@ -54,7 +54,7 @@ function Filters({
 
   return (
 
-    <div className="bg-white p-4 rounded-xl shadow-sm border">
+    <div className="rounded-xl border bg-white p-4 shadow-sm">
 
       <div className="flex flex-col md:flex-row gap-3">
 
@@ -98,7 +98,7 @@ function Filters({
         {/* SEARCH BUTTON */}
         <button
           onClick={onSearch}
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+          className="w-full rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 md:w-auto"
         >
           search
         </button>
