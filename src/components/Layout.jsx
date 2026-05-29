@@ -1,15 +1,26 @@
 import { useState } from "react"
-import { Link, useLocation } from "react-router-dom"
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
-function Layout({ children }) {
+import { clearAuthSession, getUserDisplayName } from "../utils/auth"
+
+function Layout() {
   const [collapsed, setCollapsed] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
+  const displayName = getUserDisplayName()
 
   const menu = [
     { name: "Inspecciones", path: "/", icon: "📦" },
     { name: "Reparaciones", path: "/reparaciones", icon: "🛠" },
     { name: "Reefer", path: "/reefer", icon: "❄️" }
   ]
+
+  function handleLogout() {
+    clearAuthSession()
+    toast.success("Session closed")
+    navigate("/login", { replace: true })
+  }
 
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Arial" }}>
@@ -85,8 +96,21 @@ function Layout({ children }) {
             {menu.find((m) => m.path === location.pathname)?.name || "Dashboard"}
           </h3>
 
-          <div>
-            👤 Naren
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span>👤 {displayName}</span>
+            <button
+              onClick={handleLogout}
+              style={{
+                border: "1px solid #cbd5e1",
+                background: "white",
+                color: "#0f172a",
+                borderRadius: "8px",
+                padding: "6px 10px",
+                cursor: "pointer"
+              }}
+            >
+              Logout
+            </button>
           </div>
         </header>
 
@@ -99,7 +123,7 @@ function Layout({ children }) {
             overflow: "auto"
           }}
         >
-          {children}
+          <Outlet />
         </main>
 
       </div>

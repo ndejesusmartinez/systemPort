@@ -26,21 +26,27 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Layout from "./components/Layout"
+import ProtectedRoute from "./components/ProtectedRoute"
 
 import Containers from "./pages/Containers"
 import Reparaciones from "./pages/Reparaciones"
 import Reefer from "./pages/Reefer"
+import Login from "./pages/Login"
 
 function App() {
   return (
     <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Containers />} />
-          <Route path="/reparaciones" element={<Reparaciones />} />
-          <Route path="/reefer" element={<Reefer />} />
-        </Routes>
-      </Layout>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Containers />} />
+            <Route path="/reparaciones" element={<Reparaciones />} />
+            <Route path="/reefer" element={<Reefer />} />
+          </Route>
+        </Route>
+      </Routes>
     </BrowserRouter>
   )
 }

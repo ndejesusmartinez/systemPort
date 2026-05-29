@@ -21,7 +21,9 @@ function Containers() {
   const [filters, setFilters] = useState({
     status: "OK",
     type: "DRY",
-    move: "GATE_IN"
+    move: "GATE_IN",
+    dateFrom: "",
+    dateTo: ""
   })
 
   const [openModal, setOpenModal] = useState(false)

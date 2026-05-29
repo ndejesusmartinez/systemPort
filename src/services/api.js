@@ -1,4 +1,22 @@
 const BASE_URL = "https://st9cmskim5.execute-api.us-east-1.amazonaws.com/dev"
+import { getStoredToken } from "../utils/auth"
+
+function buildHeaders(withJson = false) {
+
+  const token = getStoredToken()
+
+  const headers = {}
+
+  if (withJson) {
+    headers["Content-Type"] = "application/json"
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
+  return headers
+}
 
 // export async function getContainers() {
 //   const res = await fetch(`${BASE_URL}/containers`)
@@ -22,8 +40,19 @@ export async function getContainers(filters = {}) {
     query.append("type_move", filters.move)
   }
 
+  if (filters.dateFrom) {
+    query.append("date_from", filters.dateFrom)
+  }
+
+  if (filters.dateTo) {
+    query.append("date_to", filters.dateTo)
+  }
+
   const res = await fetch(
-    `${BASE_URL}/containers?${query.toString()}`
+    `${BASE_URL}/containers?${query.toString()}`,
+    {
+      headers: buildHeaders()
+    }
   )
 
   return await res.json()
@@ -32,9 +61,7 @@ export async function getContainers(filters = {}) {
 export async function createContainer(payload) {
   const res = await fetch(`${BASE_URL}/containers`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: buildHeaders(true),
     body: JSON.stringify(payload)
   })
 
@@ -52,9 +79,7 @@ export async function uploadPhoto(file, containerId) {
 
   const res = await fetch(`${BASE_URL}/containers/uploadPhotos`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: buildHeaders(true),
     body: JSON.stringify({
       file: base64.split(",")[1],
       fileName: file.name,
@@ -84,7 +109,25 @@ function toBase64(file) {
 
 
 export async function getDamages() {
-  const res = await fetch(`${BASE_URL}/containers/damage-catalog`)
+  const res = await fetch(`${BASE_URL}/containers/damage-catalog`, {
+    headers: buildHeaders()
+  })
   const data = await res.json()
   return data
+}
+
+export async function login(email, password) {
+
+  const res = await fetch(`${BASE_URL}/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      email,
+      password
+    })
+  })
+
+  return await res.json()
 }
