@@ -1,5 +1,47 @@
 const BASE_URL = "https://st9cmskim5.execute-api.us-east-1.amazonaws.com/dev"
-import { getStoredToken } from "../utils/auth"
+import { toast } from "sonner"
+import { clearAuthSession, getStoredToken } from "../utils/auth"
+
+let isHandlingUnauthorized = false
+
+function handleUnauthorizedSession() {
+  if (isHandlingUnauthorized) {
+    return
+  }
+
+  isHandlingUnauthorized = true
+  clearAuthSession()
+  toast.error("Session expired. Please sign in again.")
+  redirectToLogin()
+}
+
+function redirectToLogin() {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  if (window.location.pathname !== "/login") {
+    window.location.replace("/login")
+  }
+}
+
+async function parseJsonSafely(response) {
+  try {
+    return await response.json()
+  } catch {
+    return null
+  }
+}
+
+async function fetchJson(endpoint, options = {}, { redirectOnUnauthorized = true } = {}) {
+  const response = await fetch(`${BASE_URL}${endpoint}`, options)
+
+  if (redirectOnUnauthorized && response.status === 401) {
+    handleUnauthorizedSession()
+  }
+
+  return await parseJsonSafely(response)
+}
 
 function buildHeaders(withJson = false) {
 
@@ -48,25 +90,20 @@ export async function getContainers(filters = {}) {
     query.append("date_to", filters.dateTo)
   }
 
-  const res = await fetch(
-    `${BASE_URL}/containers?${query.toString()}`,
-    {
-      headers: buildHeaders()
-    }
-  )
+  const queryString = query.toString()
+  const endpoint = queryString ? `/containers?${queryString}` : "/containers"
 
-  return await res.json()
+  return await fetchJson(endpoint, {
+    headers: buildHeaders()
+  })
 }
 
 export async function createContainer(payload) {
-  const res = await fetch(`${BASE_URL}/containers`, {
+  return await fetchJson("/containers", {
     method: "POST",
     headers: buildHeaders(true),
     body: JSON.stringify(payload)
   })
-
-  const data = await res.json()
-  return data
 }
 
 
@@ -77,7 +114,7 @@ export async function uploadPhoto(file, containerId) {
 
   const base64 = await toBase64(file)
 
-  const res = await fetch(`${BASE_URL}/containers/uploadPhotos`, {
+  return await fetchJson("/containers/uploadPhotos", {
     method: "POST",
     headers: buildHeaders(true),
     body: JSON.stringify({
@@ -86,8 +123,6 @@ export async function uploadPhoto(file, containerId) {
       containerId
     })
   })
-
-  return await res.json()
 }
 
 // ==========================
@@ -109,16 +144,14 @@ function toBase64(file) {
 
 
 export async function getDamages() {
-  const res = await fetch(`${BASE_URL}/containers/damage-catalog`, {
+  return await fetchJson("/containers/damage-catalog", {
     headers: buildHeaders()
   })
-  const data = await res.json()
-  return data
 }
 
 export async function login(email, password) {
 
-  const res = await fetch(`${BASE_URL}/login`, {
+  return await fetchJson("/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -127,7 +160,5 @@ export async function login(email, password) {
       email,
       password
     })
-  })
-
-  return await res.json()
+  }, { redirectOnUnauthorized: false })
 }

@@ -14,13 +14,19 @@ export function getStoredAuth() {
 
 export function getStoredToken() {
   const explicitToken = localStorage.getItem("token")
+  const auth = getStoredAuth()
+  const token = explicitToken || auth?.token || auth?.access_token || null
 
-  if (explicitToken) {
-    return explicitToken
+  if (!token) {
+    return null
   }
 
-  const auth = getStoredAuth()
-  return auth?.token || auth?.access_token || null
+  if (isTokenExpired(token)) {
+    clearAuthSession()
+    return null
+  }
+
+  return token
 }
 
 export function isAuthenticated() {
@@ -61,6 +67,18 @@ function decodeJwtPayload(token) {
   } catch {
     return null
   }
+}
+
+function isTokenExpired(token) {
+  const payload = decodeJwtPayload(token)
+  const exp = payload?.exp
+
+  if (typeof exp !== "number") {
+    return false
+  }
+
+  const currentTimeInSeconds = Math.floor(Date.now() / 1000)
+  return currentTimeInSeconds >= exp
 }
 
 export function getUserDisplayName() {

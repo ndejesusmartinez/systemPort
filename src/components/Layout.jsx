@@ -12,8 +12,8 @@ function Layout() {
 
   const menu = [
     { name: "Inspecciones", path: "/", icon: "📦" },
-    { name: "Reparaciones", path: "/reparaciones", icon: "🛠" },
-    { name: "Reefer", path: "/reefer", icon: "❄️" }
+    // { name: "Reparaciones", path: "/reparaciones", icon: "🛠" },
+    // { name: "Reefer", path: "/reefer", icon: "❄️" }
   ]
 
   function handleLogout() {
